@@ -1,8 +1,8 @@
-name: Action shit
-description: "pipe down lil bro"
+name: Summary action
+description: "Pipe numbers into a Python helper and print a small summary"
 inputs:
   numbers:
-    description: 'JSON array of numbers as a string'
+    description: 'JSON array of numbers as a string, e.g. "[1,2,3]"'
     required: true
 outputs:
   summary:
@@ -11,7 +11,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Run python summarizer
+    - name: Run python summarizer (stdin)
       shell: bash
       run: |
         echo "${{ inputs.numbers }}" | python3 ci/print_summary.py > summary.json
