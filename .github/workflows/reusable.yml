@@ -1,1 +1,46 @@
+name: Reusable workflows
+on:
+  workflow_call:
+    inputs:
+      numbers: 
+        description: 'JSON array of string numbers'
+        type: string
+        required: true
+        default: '[1,2,3]'
+    outputs:
+      summary:
+        description: 'summary of given composite action'
+        value: ${{ jobs.summarize.outputs.summary}}
+      summary_text:
+        description: 'human readable text'
+        value: ${{ jobs.summarize.outputs.summary_text }}
 
+jobs:
+  summarize:
+      runs-on: ubuntu-latest
+              
+      outputs:
+        summary: ${{ steps.call-summary.outputs.summary }}
+        summary_text: ${{ steps.format.outputs.summary_text }}
+        
+      steps:
+      - name: Clone down repository
+        uses: actions/checkout@v7
+      - name: Calls the composite action
+        id: call-summary
+        uses: ./github/actions/summary-action
+        with:
+          numbers: ${{ inputs.numbers }}
+
+      - name: Format summary
+        id: format
+        shell: bash
+        run: |
+          printf '%s' '${{ steps.call-summary.outputs.summary }}' > summary.json || true
+          echo "summary_text=$(cat summary.json)" >> $GITHUB_OUTPUT
+          
+          python3 ./ci/format_summary.py summary.json > summary_text.txt
+          echo "summary_text=$(cat summary_text.txt)" >> $GITHUB_OUTPUT
+
+
+        
